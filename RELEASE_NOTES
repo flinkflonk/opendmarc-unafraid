@@ -6,6 +6,8 @@ release, and a summary of the changes in that release.
 1.3.2.1		(still in beta, last modification 2019/11/06)
 	Feature request #182: Log ignored authenticated clients when
 		logging is enabled. Based on a patch by Juri Haberland.
+	Feature request #184: Report the hostname in failure reports.
+		Based on a patch by Juri Haberland.
 		
 1.3.2		2016/12/19
 	Feature request #86: Change meaning of "RequiredHeaders" such that
