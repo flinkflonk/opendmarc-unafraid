@@ -167,6 +167,10 @@ opendmarc_spf2_test(char *ip_address, char *mail_from_domain, char *helo_domain,
 	if (ret != 0 || *used_mfrom == FALSE)
 	{
 		(void) strlcpy(helo, helo_domain, sizeof helo);
+		/* This domain name will be used if the envelope from address is
+		 * null (e.g. MAIL FROM:<>). This happens when a bounce is being
+		 * sent and, in effect, it is the client MTA that is sending the
+		 * message. */
 		SPF_request_set_helo_dom(ctx->spf_request, helo);
 	}
 	else
