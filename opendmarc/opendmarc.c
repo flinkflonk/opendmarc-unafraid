@@ -3053,7 +3053,7 @@ mlfi_eom(SMFICTX *ctx)
 			if (conf->conf_dolog)
 			{
 				syslog(LOG_INFO, "%s: overriding policy for mail from %s: MLM",
-					dfc->mctx_jobid);
+					dfc->mctx_jobid, domain);
 			}
 			ret = SMFIS_ACCEPT;
 			result = DMARC_RESULT_OVRD_MAILING_LIST;
@@ -3100,7 +3100,7 @@ mlfi_eom(SMFICTX *ctx)
 			if (conf->conf_dolog)
 			{
 				syslog(LOG_INFO, "%s: overriding policy for mail from %s: MLM",
-					dfc->mctx_jobid, domain);
+					dfc->mctx_jobid, pdomain);
 			}
 			result = DMARC_RESULT_OVRD_MAILING_LIST;
 		}
