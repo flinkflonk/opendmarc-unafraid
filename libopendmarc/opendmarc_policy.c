@@ -358,7 +358,7 @@ opendmarc_policy_store_from_domain(DMARC_POLICY_T *pctx, u_char *from_domain)
 **			or DMARC_POLICY_SPF_OUTCOME_PASS
 **			or DMARC_POLICY_SPF_OUTCOME_FAIL
 **			or DMARC_POLICY_SPF_OUTCOME_TMPFAIL
-**		origin 	-- DMARC_POLICY_SPF_ORIGIN_MAILFROM 
+**		origin 	-- DMARC_POLICY_SPF_ORIGIN_MAILFROM
 **			or DMARC_POLICY_SPF_ORIGIN_HELO
 **		human_readable -- A human readable reason for failure
 **	Returns:
@@ -420,7 +420,7 @@ opendmarc_policy_store_spf(DMARC_POLICY_T *pctx, u_char *domain, int result, int
 **
 **	Parameters:
 **		pctx		-- The context to uptdate
-**		d_equal_domain 	-- The the domain from the p= 
+**		d_equal_domain 	-- The the domain from the p=
 **		dkim_result 	-- DMARC_POLICY_DKIM_OUTCOME_NONE
 **				or DMARC_POLICY_DKIM_OUTCOME_PASS
 **				or DMARC_POLICY_DKIM_OUTCOME_FAIL
@@ -547,7 +547,7 @@ set_final:
 **		DMARC_DNS_ERROR_NO_RECORD	-- No DMARC record found.
 **	Side Effects:
 **		Performs one or more DNS lookups
-** 
+**
 ***************************************************************************/
 OPENDMARC_STATUS_T
 opendmarc_policy_query_dmarc_xdomain(DMARC_POLICY_T *pctx, u_char *uri)
@@ -668,7 +668,7 @@ opendmarc_policy_query_dmarc_xdomain(DMARC_POLICY_T *pctx, u_char *uri)
 }
 
 /**************************************************************************
-** OPENDMARC_POLICY_QUERY_DMARC -- Look up the _dmarc record for the 
+** OPENDMARC_POLICY_QUERY_DMARC -- Look up the _dmarc record for the
 **					specified domain. If not found
 **				  	try the organizational domain.
 **	Parameters:
@@ -694,7 +694,7 @@ opendmarc_policy_query_dmarc_xdomain(DMARC_POLICY_T *pctx, u_char *uri)
 **	Warning:
 **		If no TLD file has been loaded, will silenty not do that
 **		fallback lookup.
-** 
+**
 ***************************************************************************/
 OPENDMARC_STATUS_T
 opendmarc_policy_query_dmarc(DMARC_POLICY_T *pctx, u_char *domain)
@@ -880,6 +880,11 @@ opendmarc_get_policy_to_enforce(DMARC_POLICY_T *pctx)
 **		DMARC_PARSE_ERROR_BAD_VALUE	-- if value following = was bad
 **		DMARC_PARSE_ERROR_NO_REQUIRED_P -- if p= was absent
 **		DMARC_PARSE_OKAY		-- On Success
+**		It should be allowed to return other codes for the following three
+**		conditions.:
+**			no tag 'v' with value 'DMARC1' found
+**			tag 'v' with value 'DMARC1' found, but not as the first tag
+**			tag 'p' with a valid policy found, but not as the second flag
 **	Side Effects:
 **		Allocates memory.
 *********************************************************************************/
@@ -890,6 +895,10 @@ opendmarc_policy_parse_dmarc(DMARC_POLICY_T *pctx, u_char *domain, u_char *recor
 	u_char copy[BUFSIZ];
 	u_char cbuf[512];
 	u_char vbuf[512];
+	int tag_number = 0;
+	int valid_v_is_first = 0;
+	int valid_p_is_second = 0;
+	int valid_v_seen = 0;
 
 	if (pctx == NULL || domain == NULL || record == NULL || strlen((char *)record) == 0)
 	{
@@ -919,7 +928,7 @@ opendmarc_policy_parse_dmarc(DMARC_POLICY_T *pctx, u_char *domain, u_char *recor
 		}
 		*eqp = '\0';
 		vp = eqp + 1;
-			
+
 		cp = opendmarc_util_cleanup(cp, cbuf, sizeof cbuf);
 		if (cp == NULL || strlen((char *)cp) == 0)
 		{
@@ -934,9 +943,13 @@ opendmarc_policy_parse_dmarc(DMARC_POLICY_T *pctx, u_char *domain, u_char *recor
 		}
 		/*
 		 * cp nwo points to the token, and
-		 * vp now points to the token's value 
+		 * vp now points to the token's value
 		 * both with all surronding whitepace removed.
 		 */
+		tag_number++;
+#ifdef DEBUG_DMARC_RECORD_PARSER
+		syslog(LOG_INFO, 'DEBUG: n: '%i', cp: '%s', vp: '%s'\n", tag_number, (char *)c, (char *)p);
+#endif
 		if (strcasecmp((char *)cp, "v") == 0)
 		{
 			/*
@@ -947,6 +960,8 @@ opendmarc_policy_parse_dmarc(DMARC_POLICY_T *pctx, u_char *domain, u_char *recor
 			{
 				return DMARC_PARSE_ERROR_BAD_VERSION;
 			}
+			valid_v_is_first = (1 == tag_number) ? 1 : 0;
+			valid_v_seen = 1;
 		}
 		else if (strcasecmp((char *)cp, "p") == 0)
 		{
@@ -965,6 +980,7 @@ opendmarc_policy_parse_dmarc(DMARC_POLICY_T *pctx, u_char *domain, u_char *recor
 				/* A totaly unknown value */
 				return DMARC_PARSE_ERROR_BAD_VALUE;
 			}
+			valid_p_is_second = (2 == tag_number) ? 1 : 0;
 		}
 		else if (strcasecmp((char *)cp, "sp") == 0)
 		{
@@ -1112,7 +1128,7 @@ opendmarc_policy_parse_dmarc(DMARC_POLICY_T *pctx, u_char *domain, u_char *recor
 				{
 					return DMARC_PARSE_ERROR_BAD_VALUE;
 				}
-				
+
 				if (yp != NULL)
 					xp = yp+1;
 				else
@@ -1124,7 +1140,7 @@ opendmarc_policy_parse_dmarc(DMARC_POLICY_T *pctx, u_char *domain, u_char *recor
 			char *xp, *yp;
 
 			/*
-			 * A possibly comma delimited list of URI of where to send 
+			 * A possibly comma delimited list of URI of where to send
 			 * MARF reports.
 			 */
 			for (xp = vp; *xp != '\0'; )
@@ -1145,7 +1161,7 @@ opendmarc_policy_parse_dmarc(DMARC_POLICY_T *pctx, u_char *domain, u_char *recor
 				{
 					return DMARC_PARSE_ERROR_BAD_VALUE;
 				}
-				
+
 				if (yp != NULL)
 					xp = yp+1;
 				else
@@ -1223,6 +1239,29 @@ opendmarc_policy_parse_dmarc(DMARC_POLICY_T *pctx, u_char *domain, u_char *recor
 		pctx->ri = 86400;
 	if (pctx->fo == DMARC_RECORD_FO_UNSPECIFIED)
 		pctx->fo = DMARC_RECORD_FO_0;
+
+#ifdef DEBUG_DMARC_RECORD_PARSER
+	syslog(LOG_INFO, "DEBUG: valid_v_seen: %i, valid_v_is_first  %i, valid_p_is_second %i", valid_v_seen, valid_v_is_first, valid_p_is_second);
+#endif
+
+	if (1 != valid_v_seen)
+	{
+#ifdef DEBUG_DMARC_RECORD_PARSER
+		syslog(LOG_INFO, "DEBUG: DMARC record does not contain 'v=DMARCV1̈́');
+#endif
+		return DMARC_PARSE_ERROR_BAD_VERSION;
+	}
+	if  (1 != valid_v_is_first)
+	{
+		return DMARC_PARSE_ERROR_BAD_VERSION;;
+	}
+	if (1 != valid_p_is_second)
+	{
+#ifdef DEBUG_DMARC_RECORD_PARSER
+		syslog(LOG_INFO, "DEBUG: DMARC record does contain 'p=$policy', but it is not the second target);
+#endif
+		return DMARC_PARSE_ERROR_BAD_VERSION;
+	}
 
 	if (pctx->from_domain == NULL)
 		pctx->from_domain = strdup(domain);
@@ -1552,7 +1591,7 @@ opendmarc_policy_library_dns_hook(int *nscountp,
 
 /**************************************************************************
 ** OPENDMARC_POLICY_STATUS_TO_STR -- Convert the integer return
-**				     of type OPENDMARC_STATUS_T into 
+**				     of type OPENDMARC_STATUS_T into
 **				     a human readable string.
 **	Parameters:
 **		status	-- The status for which to return a string
@@ -1570,58 +1609,58 @@ opendmarc_policy_status_to_str(OPENDMARC_STATUS_T status)
 	    case DMARC_PARSE_OKAY:
 	    	msg = "Success. No Errors";
 		break;
-	    case DMARC_PARSE_ERROR_EMPTY: 
+	    case DMARC_PARSE_ERROR_EMPTY:
 		msg = "Function called with nothing to parse";
 		break;
-	    case DMARC_PARSE_ERROR_NULL_CTX: 
+	    case DMARC_PARSE_ERROR_NULL_CTX:
 		msg  ="Function called with NULL Context";
 		break;
-	    case DMARC_PARSE_ERROR_BAD_VERSION: 
+	    case DMARC_PARSE_ERROR_BAD_VERSION:
 		msg = "Found DMARC record containd a bad v= value";
 		break;
-	    case DMARC_PARSE_ERROR_BAD_VALUE: 
+	    case DMARC_PARSE_ERROR_BAD_VALUE:
 		msg = "Found DMARC record containd a bad token value";
 		break;
-	    case DMARC_PARSE_ERROR_NO_REQUIRED_P: 
+	    case DMARC_PARSE_ERROR_NO_REQUIRED_P:
 		msg = "Found DMARC record lacked a required p= entry";
 		break;
-	    case DMARC_PARSE_ERROR_NO_DOMAIN: 
+	    case DMARC_PARSE_ERROR_NO_DOMAIN:
 		msg = "Function found the domain empty, e.g. \"<>\"";
 		break;
-	    case DMARC_PARSE_ERROR_NO_ALLOC: 
+	    case DMARC_PARSE_ERROR_NO_ALLOC:
 		msg = "Memory allocation error";
 		break;
-	    case DMARC_PARSE_ERROR_BAD_SPF_MACRO: 
+	    case DMARC_PARSE_ERROR_BAD_SPF_MACRO:
 		msg = "Attempt to store an illegal value";
 		break;
-	    case DMARC_DNS_ERROR_NO_RECORD: 
+	    case DMARC_DNS_ERROR_NO_RECORD:
 		msg = "Looked up domain lacked a DMARC record";
 		break;
-	    case DMARC_DNS_ERROR_NXDOMAIN: 
+	    case DMARC_DNS_ERROR_NXDOMAIN:
 		msg = "Looked up domain did not exist";
 		break;
-	    case DMARC_DNS_ERROR_TMPERR: 
+	    case DMARC_DNS_ERROR_TMPERR:
 		msg = "DNS lookup of domain tempfailed";
 		break;
-	    case DMARC_TLD_ERROR_UNKNOWN: 
+	    case DMARC_TLD_ERROR_UNKNOWN:
 		msg = "Attempt to load an unknown TLD file type";
 		break;
-	    case DMARC_FROM_DOMAIN_ABSENT: 
+	    case DMARC_FROM_DOMAIN_ABSENT:
 		msg = "No From: domain was supplied";
 		break;
-	    case DMARC_POLICY_ABSENT: 
+	    case DMARC_POLICY_ABSENT:
 		msg = "Policy up to you. No DMARC record found";
 		break;
-	    case DMARC_POLICY_PASS: 
+	    case DMARC_POLICY_PASS:
 		msg = "Policy OK so accept message";
 		break;
-	    case DMARC_POLICY_REJECT: 
+	    case DMARC_POLICY_REJECT:
 		msg = "Policy says to reject message";
 		break;
-	    case DMARC_POLICY_QUARANTINE: 
+	    case DMARC_POLICY_QUARANTINE:
 		msg = "Policy says to quarantine message";
 		break;
-	    case DMARC_POLICY_NONE: 
+	    case DMARC_POLICY_NONE:
 		msg = "Policy says to monitor and report";
 		break;
 	}
