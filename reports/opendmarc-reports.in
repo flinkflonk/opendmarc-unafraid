@@ -20,7 +20,8 @@ use File::Temp;
 use Net::Domain qw(hostfqdn hostdomain);
 use Getopt::Long;
 use IO::Handle;
-use IO::Compress::Zip qw(zip);
+#use IO::Compress::Zip qw(zip);
+use IO::Compress::Gzip qw(gzip);
 use POSIX;
 use MIME::Base64;
 use Net::SMTP;
@@ -525,7 +526,7 @@ foreach (@$domainset)
 
 	# construct the temporary file
 	$repfile = $repdom . "!" . $domain . "!" . $repstart . "!" . $repend . ".xml";
-	$zipfile = $repdom . "!" . $domain . "!" . $repstart . "!" . $repend . ".zip";
+	$zipfile = $repdom . "!" . $domain . "!" . $repstart . "!" . $repend . ".xml.gz";
 	if (!open($tmpout, ">", $repfile))
 	{
 		print STDERR "$progname: can't create report file for domain $domain\n";
@@ -807,9 +808,9 @@ foreach (@$domainset)
 	}
 
 	# zip the report
-	if (!zip [ $repfile ] => $zipfile)
+	if (!gzip [ $repfile ] => $zipfile)
 	{
-		print STDERR "$progname: can't zip report for domain $domain: $!\n";
+		print STDERR "$progname: can't gzip report for domain $domain: $!\n";
 		next;
 	}
 
@@ -885,7 +886,7 @@ foreach (@$domainset)
 
 			if (!open($zipin, $zipfile))
 			{
-				print STDERR "$progname: can't read zipped report for $domain: $!\n";
+				print STDERR "$progname: can't read gzipped report for $domain: $!\n";
 				next;
 			}
 
@@ -914,7 +915,7 @@ foreach (@$domainset)
 			$mailout .= "generated at " . strftime("%a, %b %e %Y %H:%M:%S %z (%Z)", localtime()) . "\n";
 			$mailout .= "\n";
 			$mailout .= "--$boundary\n";
-			$mailout .= "Content-Type: application/zip\n";
+			$mailout .= "Content-Type: application/gzip\n";
 			$mailout .= "Content-Disposition: attachment; filename=\"$zipfile\"\n";
 			$mailout .= "Content-Transfer-Encoding: base64\n";
 			$mailout .= "\n";
