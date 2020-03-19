@@ -394,7 +394,7 @@ dmarcf_getsymval(SMFICTX *ctx, char *sym)
 **
 **  Parameters:
 **  	str -- the value of the Received-SPF field to analyze
-**  	
+**
 **  Return value:
 **  	A ARES_RESULT_* constant.
 */
@@ -1073,7 +1073,7 @@ dmarcf_checkip(_SOCK_ADDR *ip, struct list *list)
 
 			(void) dmarcf_inet_ntoa(mask, &ipbuf[c],
 			                        sizeof ipbuf - c);
-		
+
 			if (dmarcf_checklist(ipbuf, list))
 				return FALSE;
 
@@ -1214,7 +1214,7 @@ dmarcf_config_load(struct config *data, struct dmarcf_config *conf,
 		{
 			if (strcmp(str, "HOSTNAME") == 0)
 				conf->conf_authservid = strdup(myhostname);
-			else	
+			else
 				conf->conf_authservid = strdup(str);
 		}
 
@@ -1527,7 +1527,7 @@ dmarcf_config_reload(void)
 				err = TRUE;
 			}
 		}
- 
+
 		if (!err)
 		{
 			if (curconf->conf_refcnt == 0)
@@ -2195,6 +2195,7 @@ mlfi_eom(SMFICTX *ctx)
 			       "%s: RFC5322 requirement error: %s",
 			       dfc->mctx_jobid, reqhdrs_error);
 		}
+		dmarcf_setreply(ctx, DMARC_REJECT_SMTP, DMARC_REJECT_ESC, reqhdrs_error);
 
 		return SMFIS_REJECT;
 	}
@@ -2439,7 +2440,7 @@ mlfi_eom(SMFICTX *ctx)
 				                                     DMARC_POLICY_SPF_OUTCOME_PASS,
 				                                     spfmode,
 				                                     NULL);
-				                                     
+
 				if (ostatus != DMARC_PARSE_OKAY)
 				{
 					if (conf->conf_dolog)
@@ -2484,7 +2485,7 @@ mlfi_eom(SMFICTX *ctx)
 				if (ar.ares_result[c].result_result != ARES_RESULT_PASS)
 					continue;
 
-		                                     
+
 				ostatus = opendmarc_policy_store_dkim(cc->cctx_dmarc,
 				                                      domain,
 				                                      DMARC_POLICY_DKIM_OUTCOME_PASS,
@@ -2505,7 +2506,7 @@ mlfi_eom(SMFICTX *ctx)
 		}
 	}
 
-	/* 
+	/*
 	**  If we didn't get Authentication-Results for SPF, parse any
 	**  Received-SPF we might have.
 	*/
@@ -2612,7 +2613,7 @@ mlfi_eom(SMFICTX *ctx)
 				use_domain = cc->cctx_helo;
 				spf_mode   = DMARC_POLICY_SPF_ORIGIN_HELO;
 			}
-			ostatus = opendmarc_policy_store_spf(cc->cctx_dmarc, 
+			ostatus = opendmarc_policy_store_spf(cc->cctx_dmarc,
 				                                     use_domain,
 				                                     spf_result,
 				                                     spf_mode,
@@ -2905,7 +2906,7 @@ mlfi_eom(SMFICTX *ctx)
 				                   conf->conf_afrfbcc);
 				dmarcf_dstring_cat(dfc->mctx_afrf, "\n");
 			}
-			
+
 			/* Date: */
 			(void) time(&now);
 			tm = localtime(&now);
@@ -4717,7 +4718,7 @@ main(int argc, char **argv)
 		{
 			if (c == 0)
 			{
-				strlcpy(argstr, 
+				strlcpy(argstr,
 				        curconf->conf_trustedauthservids[c],
 				        n);
 			}
