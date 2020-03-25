@@ -709,6 +709,7 @@ opendmarc_spf_ipv6_explode(char *str, TXT_ARY_T *ap)
 	(void) strlcpy(copy, str, sizeof copy);
 
 	ncolons = 0;
+	syslog(LOG_INFO, "DEBUG: opendmarc_spf_ipv6_explode - looking for colons in \"%s\"", copy);
 	for (cp = copy; *cp != '\0'; ++cp)
 		if (*cp == ':')
 			++ncolons;
@@ -719,7 +720,7 @@ opendmarc_spf_ipv6_explode(char *str, TXT_ARY_T *ap)
 	{
 		if (cp == NULL) {
 			syslog(LOG_INFO, "DEBUG: opendmarc_spf_ipv6_explode - i=%d, ep=%x, copy=%x", i, ep, copy);
-			break;
+			return errono = EINVAL;
 		}
 		ep = strchr(cp, ':');
 		if (ep != NULL)
