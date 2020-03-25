@@ -720,7 +720,7 @@ opendmarc_spf_ipv6_explode(char *str, TXT_ARY_T *ap)
 	{
 		if (cp == NULL) {
 			syslog(LOG_INFO, "DEBUG: opendmarc_spf_ipv6_explode - i=%d, ep=%x, copy=%x", i, ep, copy);
-			return errono = EINVAL;
+			return errno = EINVAL;
 		}
 		ep = strchr(cp, ':');
 		if (ep != NULL)
