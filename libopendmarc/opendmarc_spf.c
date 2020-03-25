@@ -1,6 +1,6 @@
 /********************************************************************
 ** OPENDMARC_SPF.C --  Process the spf record of the inbound message
-**********************************************************************/ 
+**********************************************************************/
 # include "opendmarc_internal.h"
 
 /* libbsd if found */
@@ -71,7 +71,7 @@ opendmarc_spf2_find_mailfrom_domain(SPF_CTX_T *spfctx, char *raw_address, char *
 
 	if (mailfrom == NULL || raw_address == NULL)
 		return EINVAL;
-	
+
 	(void) memset(copy, '\0', sizeof copy);
 	(void) strlcpy(copy, raw_address, sizeof copy);
 
@@ -91,7 +91,7 @@ opendmarc_spf2_find_mailfrom_domain(SPF_CTX_T *spfctx, char *raw_address, char *
 		if (use_flag != NULL)
 			*use_flag = TRUE;
 	}
-		
+
 	if (strcasecmp(cp, "MAILER_DAEMON") == 0)
 		cp = "";
 
@@ -581,13 +581,13 @@ opendmarc_spf_reverse(char *str, char *buf, size_t buflen)
 }
 
 typedef struct {
-	u_int   values[8];    
+	u_int   values[8];
 	int     nvalues;
-} INT_ARY_T;    
+} INT_ARY_T;
 
 typedef struct {
         char    strs[8][32];
-	int     nstrs;     
+	int     nstrs;
 } TXT_ARY_T;
 
 
@@ -713,10 +713,14 @@ opendmarc_spf_ipv6_explode(char *str, TXT_ARY_T *ap)
 		if (*cp == ':')
 			++ncolons;
 	ncolons = 7 - ncolons;
-	
+
 	cp = copy;
 	for (i = 7; i >= 0; i--)
 	{
+		if (cp == NULL) {
+			syslog(LOG_INFO, "DEBUG: opendmarc_spf_ipv6_explode - i=%d, ep=%x, copy=%x", i, ep, copy);
+			break;
+		}
 		ep = strchr(cp, ':');
 		if (ep != NULL)
 			*ep = '\0';
@@ -769,7 +773,7 @@ opendmarc_spf_ipv6_cidr_check(char *ipv6_str, char *cidr_string)
 		return FALSE;
 
 	(void) strlcpy(cidr_str, cidr_string, sizeof cidr_str);
-	
+
 	cp = strchr(cidr_str, '/');
 	if (cp == NULL)
 	{
@@ -910,7 +914,7 @@ opendmarc_spf_strip_dots(char *str, char *dot, char *buf, size_t buflen)
 	(void) memset(buf, '\0', buflen);
 	(void) memset(dupe, '\0', buflen);
 	(void) strlcpy(dupe, str, buflen);
-	
+
 	for (cp = dupe + strlen(dupe) - 1; cp > dupe; --cp)
 	{
 		if (*cp == '.')
@@ -2003,7 +2007,7 @@ opendmarc_spf_specify_mailfrom(SPF_CTX_T *spfctx, char *mailfrom, size_t mailfro
 
 	if (mailfrom == NULL)
 		return EINVAL;
-	
+
 	(void) memset(copy, '\0', sizeof copy);
 	(void) strlcpy(copy, mailfrom, sizeof copy);
 
@@ -2026,7 +2030,7 @@ opendmarc_spf_specify_mailfrom(SPF_CTX_T *spfctx, char *mailfrom, size_t mailfro
 		if (use_flag != NULL)
 			*use_flag = TRUE;
 	}
-		
+
 	if (strcasecmp(cp, "MAILER_DAEMON") == 0)
 		cp = "";
 
