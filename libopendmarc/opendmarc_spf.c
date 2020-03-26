@@ -106,6 +106,7 @@ opendmarc_spf2_specify_ip_address(SPF_CTX_T *spfctx, char *ip_address, size_t ip
 	if (spfctx == NULL)
 		return EINVAL;
 
+	syslog(LOG_INFO, "DEBUG: opendmarc_spf2_specify_ip_address: ip_address=\"%s\", ip_address_len=%d", ip_address, ip_address_len);
 	if (ip_address == NULL)
 		return EINVAL;
 
@@ -126,6 +127,7 @@ opendmarc_spf2_test(char *ip_address, char *mail_from_domain, char *helo_domain,
 	char		helo[512];
 	char		mfrom[512];
 
+	syslog(LOG_INFO, "DEBUG: opendmarc_spf2_test: ip_address=\"%s\", mail_from_domain=\"%s\", helo_domain=\"%s\", spf_record=\"%s\", human_readable=\"%s\"", ip_address, mail_from_domain, helo_domain, spf_record, human_readable);
 	if (used_mfrom != NULL)
 		*used_mfrom = FALSE;
 
