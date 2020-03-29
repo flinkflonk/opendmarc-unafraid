@@ -261,7 +261,7 @@ typedef struct spf_context_struct {
 	char    helo_domain[256];
 	char    mailfrom_domain[256];
 	char    validated_domain[256];
-	char    ip_address[32];
+	char    ip_address[64];
 	char    spf_record[BUFSIZ *2];
 	char ** iplist;
 	int     ipcount;
