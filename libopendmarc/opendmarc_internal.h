@@ -89,20 +89,20 @@
 # endif
 
 # ifndef UNDEFINED
-#       define UNDEFINED	(-1) 
+#       define UNDEFINED	(-1)
 # endif
 # ifndef TRUE
-#       define TRUE		(1) 
+#       define TRUE		(1)
 # endif
-# ifndef FALSE 
+# ifndef FALSE
 #       define FALSE		(0)
-# endif 
-# ifndef MAYBE 
+# endif
+# ifndef MAYBE
 #       define MAYBE		(2)
-# endif 
+# endif
 # define bool int
 /*
-** Beware that some Linux versions incorrectly define 
+** Beware that some Linux versions incorrectly define
 ** MAXHOSTNAMELEN as 64, but DNS lookups require a length
 ** of 255. So we don't use MAXHOSTNAMELEN here. Instead
 ** we use our own MAXDNSHOSTNAME.
@@ -238,7 +238,7 @@ void opendmarc_policy_library_dns_hook(int *nscountp, struct sockaddr_in *nsaddr
 #if HAVE_SPF2_H
 #define HAVE_NS_TYPE
 #include "spf.h"
-typedef struct spf_context_struct { 
+typedef struct spf_context_struct {
 	SPF_server_t *		spf_server;
 	SPF_request_t *		spf_request;
 	SPF_response_t *	spf_response;
@@ -253,7 +253,7 @@ int opendmarc_spf2_test(char *ip_address, char *mail_from_domain, char *helo_dom
 
 /* opendmarc_spf.c and opendmarc_spf_dns.c */
 #define MAX_SPF_RECURSION (10)
-typedef struct spf_context_struct { 
+typedef struct spf_context_struct {
         int     nlines;
 	char *  lines[MAX_SPF_RECURSION+2];
 	int     status;
